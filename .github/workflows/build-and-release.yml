@@ -2,8 +2,9 @@ name: Build and Release Go Application
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+      - 'feat/*'
 
 jobs:
   build:
@@ -40,6 +41,7 @@ jobs:
     name: Release
     needs: build
     runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') # only run release job when a tag is pushed
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v3
