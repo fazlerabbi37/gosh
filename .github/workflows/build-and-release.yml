@@ -22,20 +22,29 @@ jobs:
     - name: Build for Linux
       run: GOOS=linux GOARCH=amd64 go build -o gosh-linux-amd64
 
+    - name: Upload Linux Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: gosh-linux-amd64
+        path: gosh-linux-amd64
+
     - name: Build for Windows
       run: GOOS=windows GOARCH=amd64 go build -o gosh-windows-amd64.exe
+
+    - name: Upload Windows Binary
+      uses: actions/upload-artifact@v4
+      with:
+        name: gosh-windows-amd64
+        path: gosh-windows-amd64.exe
 
     - name: Build for macOS
       run: GOOS=darwin GOARCH=amd64 go build -o gosh-darwin-amd64
 
-    - name: Upload artifacts
+    - name: Upload macOS Binary
       uses: actions/upload-artifact@v4
       with:
-        name: binaries
-        path: |
-          gosh-linux-amd64
-          gosh-windows-amd64.exe
-          gosh-darwin-amd64
+        name: gosh-darwin-amd64
+        path: gosh-darwin-amd64
 
   release:
     name: Release
@@ -43,10 +52,20 @@ jobs:
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') # only run release job when a tag is pushed
     steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
+      - name: Download Linux Binary
+        uses: actions/download-artifact@v4
         with:
-          name: binaries
+          name: gosh-linux-amd64
+
+      - name: Download Windows Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: gosh-windows-amd64
+
+      - name: Download macOS Binary
+        uses: actions/download-artifact@v4
+        with:
+          name: gosh-darwin-amd64
 
       - name: Create Release
         id: create_release
@@ -59,7 +78,7 @@ jobs:
           draft: false
           prerelease: false
 
-      - name: Upload Linux Binary
+      - name: Upload Linux Binary to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +88,7 @@ jobs:
           asset_name: gosh-linux-amd64
           asset_content_type: application/octet-stream
 
-      - name: Upload Windows Binary
+      - name: Upload Windows Binary to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,7 +98,7 @@ jobs:
           asset_name: gosh-windows-amd64.exe
           asset_content_type: application/octet-stream
 
-      - name: Upload macOS Binary
+      - name: Upload macOS Binary to Release
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
